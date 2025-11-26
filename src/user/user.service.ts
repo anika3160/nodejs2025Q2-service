@@ -1,11 +1,10 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { validate as uuidValidate, version as uuidVersion } from 'uuid';
+import { validateUuid } from '../common/utils/uuid';
 import db, { User } from '../database/db';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-user.dto';
@@ -31,7 +30,7 @@ export class UserService {
   }
 
   findOne(id: string) {
-    this.validateUuid(id);
+    validateUuid(id, 'userId');
     const user = db.users.find((item) => item.id === id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -40,7 +39,7 @@ export class UserService {
   }
 
   update(id: string, UpdatePasswordDto: UpdatePasswordDto) {
-    this.validateUuid(id);
+    validateUuid(id, 'userId');
     const user = db.users.find((item) => item.id === id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -55,18 +54,12 @@ export class UserService {
   }
 
   remove(id: string) {
-    this.validateUuid(id);
+    validateUuid(id, 'userId');
     const index = db.users.findIndex((item) => item.id === id);
     if (index === -1) {
       throw new NotFoundException('User not found');
     }
     db.users.splice(index, 1);
-  }
-
-  private validateUuid(id: string) {
-    if (!uuidValidate(id) || uuidVersion(id) !== 4) {
-      throw new BadRequestException('userId is invalid (not uuid)');
-    }
   }
 
   private removePassword(user: User) {

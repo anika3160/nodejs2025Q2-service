@@ -65,7 +65,8 @@ export class UserService {
   }
 
   private removePassword(user: User) {
-    const { password, ...rest } = user;
-    return rest;
+    const userWithoutPassword = { ...user };
+    delete userWithoutPassword.password;
+    return userWithoutPassword;
   }
 }

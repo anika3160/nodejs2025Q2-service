@@ -5,9 +5,10 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { validateUuid } from '../common/utils/uuid';
-import db, { User } from '../database/db';
+import db from '../database/db';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-user.dto';
+import User from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -49,7 +50,8 @@ export class UserService {
     }
     user.password = UpdatePasswordDto.newPassword;
     user.version += 1;
-    user.updatedAt = Date.now();
+    const now = Date.now();
+    user.updatedAt = now <= user.updatedAt ? user.updatedAt + 1 : now;
     return this.removePassword(user);
   }
 

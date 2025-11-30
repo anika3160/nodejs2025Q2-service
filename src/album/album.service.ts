@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { ERROR_MESSAGES } from 'src/common/constants';
 import { validateUuid } from '../common/utils/uuid';
 import db from '../database/db';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -27,7 +28,7 @@ export class AlbumService {
     validateUuid(id, 'albumId');
     const album = db.albums.find((item) => item.id === id);
     if (!album) {
-      throw new NotFoundException('Album not found');
+      throw new NotFoundException(ERROR_MESSAGES.ALBUM_NOT_FOUND);
     }
     return album;
   }
@@ -36,7 +37,7 @@ export class AlbumService {
     validateUuid(id, 'albumId');
     const album = db.albums.find((item) => item.id === id);
     if (!album) {
-      throw new NotFoundException('Album not found');
+      throw new NotFoundException(ERROR_MESSAGES.ALBUM_NOT_FOUND);
     }
     if (updateAlbumDto.name !== undefined) album.name = updateAlbumDto.name;
     if (updateAlbumDto.year !== undefined) album.year = updateAlbumDto.year;
@@ -49,7 +50,7 @@ export class AlbumService {
     validateUuid(id, 'albumId');
     const index = db.albums.findIndex((item) => item.id === id);
     if (index === -1) {
-      throw new NotFoundException('Album not found');
+      throw new NotFoundException(ERROR_MESSAGES.ALBUM_NOT_FOUND);
     }
     db.albums.splice(index, 1);
     db.favorites.albums = db.favorites.albums.filter((item) => item !== id);

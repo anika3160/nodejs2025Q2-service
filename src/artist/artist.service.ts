@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { ERROR_MESSAGES } from '../common/constants';
 import { validateUuid } from '../common/utils/uuid';
 import db from '../database/db';
 import { CreateArtistDto } from './dto/create-artist.dto';
@@ -26,7 +27,7 @@ export class ArtistService {
     validateUuid(id, 'artistId');
     const artist = db.artists.find((item) => item.id === id);
     if (!artist) {
-      throw new NotFoundException('Artist not found');
+      throw new NotFoundException(ERROR_MESSAGES.ARTIST_NOT_FOUND);
     }
     return artist;
   }
@@ -35,7 +36,7 @@ export class ArtistService {
     validateUuid(id, 'artistId');
     const artist = db.artists.find((item) => item.id === id);
     if (!artist) {
-      throw new NotFoundException('Artist not found');
+      throw new NotFoundException(ERROR_MESSAGES.ARTIST_NOT_FOUND);
     }
     if (updateArtistDto.name !== undefined) artist.name = updateArtistDto.name;
     if (updateArtistDto.grammy !== undefined)
@@ -47,7 +48,7 @@ export class ArtistService {
     validateUuid(id, 'artistId');
     const index = db.artists.findIndex((item) => item.id === id);
     if (index === -1) {
-      throw new NotFoundException('Artist not found');
+      throw new NotFoundException(ERROR_MESSAGES.ARTIST_NOT_FOUND);
     }
     db.artists.splice(index, 1);
     db.favorites.artists = db.favorites.artists.filter((item) => item !== id);

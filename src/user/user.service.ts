@@ -9,6 +9,7 @@ import db from '../database/db';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-user.dto';
 import User from './entities/user.entity';
+import { ERROR_MESSAGES } from '../common/constants';
 
 @Injectable()
 export class UserService {
@@ -34,7 +35,7 @@ export class UserService {
     validateUuid(id, 'userId');
     const user = db.users.find((item) => item.id === id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
     return this.removePassword(user);
   }
@@ -43,7 +44,7 @@ export class UserService {
     validateUuid(id, 'userId');
     const user = db.users.find((item) => item.id === id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
     if (user.password !== UpdatePasswordDto.oldPassword) {
       throw new ForbiddenException('Old password is wrong');
@@ -59,7 +60,7 @@ export class UserService {
     validateUuid(id, 'userId');
     const index = db.users.findIndex((item) => item.id === id);
     if (index === -1) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
     db.users.splice(index, 1);
   }

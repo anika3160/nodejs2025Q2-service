@@ -4,14 +4,15 @@ services:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - "4000:4000"
     env_file:
       - .env
     environment:
       - PORT=${PORT}
-      - DATABASE_URL=${DB_URL}
+      - DATABASE_URL=${DATABASE_URL}
     networks:
       - app-network
     restart: unless-stopped
@@ -21,11 +22,11 @@ services:
       context: ./docker/db
       dockerfile: Dockerfile
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
       interval: 30s
       timeout: 10s
       retries: 5

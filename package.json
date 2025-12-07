@@ -25,6 +25,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
+    "prisma:migrate:create": "prisma migrate dev --name create_db_entities",
     "security-check": "npm audit --audit-level=high"
   },
   "dependencies": {

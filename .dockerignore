@@ -1,7 +1,10 @@
 node_modules
 dist
 npm-debug.log
-.DS_Store
+Dockerfile*
+docker-compose*
 .git
+.gitignore
 coverage
 .env
+.vscode

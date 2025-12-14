@@ -3,6 +3,20 @@
 NestJS with Prisma ORM REST API for Users, Artists, Albums, Tracks and Favorites with PostgreSQL db in Docker.
 Swagger spec is served at `/doc`.
 
+## Authentication & Authorization
+
+- Public routes: `/auth/signup`, `/auth/login`, `/auth/refresh`, `/doc`, `/`.
+- Protected routes: all others require `Authorization: Bearer <accessToken>`.
+- Tokens: Access/Refresh JWTs include `userId` and `login`; secrets and TTLs come from `.env` (`JWT_SECRET_KEY`, `JWT_SECRET_REFRESH_KEY`, `TOKEN_EXPIRE_TIME`, `TOKEN_REFRESH_EXPIRE_TIME`).
+- Passwords are stored as bcrypt hashes; salt rounds are controlled via `CRYPT_SALT`.
+
+### Manual check
+
+1) Signup: `POST /auth/signup` `{ "login": "user1", "password": "pass1" }` → 201, no `password` in response.  
+2) Login: `POST /auth/login` with same body → 200, returns `{ accessToken, refreshToken }`.  
+3) Call protected route, e.g. `GET /user` with header `Authorization: Bearer <accessToken>` → 200; without header → 401.  
+4) Refresh: `POST /auth/refresh` `{ "refreshToken": "<refreshToken>" }` → 200, new token pair; missing token → 401, invalid/expired → 403.
+
 ## Prerequisites
 
 - Git - [Download & Install Git](https://git-scm.com/downloads).

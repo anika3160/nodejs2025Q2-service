@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import * as bcrypt from 'bcrypt';
 import { validateUuid } from '../common/utils/uuid';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -14,15 +15,22 @@ import { User as PrismaUser } from '@prisma/client';
 
 @Injectable()
 export class UserService {
+  private readonly saltRounds =
+    Number(process.env.CRYPT_SALT) > 0 &&
+    Number.isInteger(Number(process.env.CRYPT_SALT))
+      ? Number(process.env.CRYPT_SALT)
+      : 10;
+
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
     const now = new Date();
+    const hashedPassword = await this.hashPassword(createUserDto.password);
     const user = await this.prisma.user.create({
       data: {
         id: randomUUID(),
         login: createUserDto.login,
-        password: createUserDto.password,
+        password: hashedPassword,
         version: 1,
         createdAt: now,
         updatedAt: now,
@@ -45,20 +53,27 @@ export class UserService {
     return this.removePassword(user);
   }
 
-  async update(id: string, UpdatePasswordDto: UpdatePasswordDto) {
+  async update(id: string, updatePasswordDto: UpdatePasswordDto) {
     validateUuid(id, 'userId');
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
       throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
-    if (user.password !== UpdatePasswordDto.oldPassword) {
+    const isPasswordValid = await this.isPasswordMatch(
+      updatePasswordDto.oldPassword,
+      user.password,
+    );
+    if (!isPasswordValid) {
       throw new ForbiddenException('Old password is wrong');
     }
+    const hashedPassword = await this.hashPassword(
+      updatePasswordDto.newPassword,
+    );
     const nextUpdatedAt = this.nextTimestamp(user.updatedAt);
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
-        password: UpdatePasswordDto.newPassword,
+        password: hashedPassword,
         version: { increment: 1 },
         updatedAt: nextUpdatedAt,
       },
@@ -89,5 +104,13 @@ export class UserService {
     const now = Date.now();
     const current = currentDate.getTime();
     return new Date(now <= current ? current + 1 : now);
+  }
+
+  private hashPassword(password: string) {
+    return bcrypt.hash(password, this.saltRounds);
+  }
+
+  private isPasswordMatch(password: string, hash: string) {
+    return bcrypt.compare(password, hash);
   }
 }
